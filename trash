@@ -1,0 +1,137 @@
+[
+
+    body("first_name")
+        .not()
+        .isEmpty()
+        .withMessage("first_name is required"),
+
+    body("last_name")
+        .not()
+        .isEmpty()
+        .withMessage("last_name is required"),
+
+    body("email_id")
+        .not().isEmpty().withMessage("email_id is required").isEmail().withMessage("invalid email_id"),
+
+    body("password")
+        .not().isEmpty().withMessage("password is required")
+]
+
+[
+    //validation using express-va;idator
+    body("email_id")
+        .not()
+        .isEmpty()
+        .withMessage("email_id is required")
+        .isEmail()
+        .withMessage("invalid Email_id"),
+    body("password").not().isEmpty().withMessage("password is required")
+]
+
+
+if (!first_name || !last_name || !email_id || !password) {
+    return res.status(400).json({ error: "All fields are required" });
+}
+if (!first_name)
+    return res.status(400).json({ error: "Plaease enter first_name" });
+if (!last_name)
+    return res.status(400).json({ error: "Plaease enter last_name" });
+if (!email_id)
+    return res.status(400).json({ error: "Plaease enter email_id" });
+if (!password)
+    return res.status(400).json({ error: "Plaease enter password" });
+
+// Regular expression for email validation
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// Check if the email is in a valid format
+if (!emailRegex.test(email_id)) {
+    return res.status(400).json({ error: 'Invalid email format' });
+}
+
+//=========================================================================================================
+
+// Handle events from the client
+socket.on('message', (data) => {
+    // Save the message to the database (you need to implement this)
+    // ...
+
+    // Broadcast the message to the conversation room
+    io.to(data.conversation_id).emit('newMessage', data);
+});
+
+
+// Socket.IO integration for real-time chat
+io.on('connection', (socket) => {
+    console.log('New user connected:', socket.id);
+
+    socket.on('joiningRoom', (room) => {
+
+        socket.join(room.id);
+        console.log(`user ${socket.id} join tha room ${room.id}`);
+    });
+
+    socket.on('chatMessage', (room, message) => {
+        io.to(room.id).emit('message', message);
+        console.log('messaging...');
+    });
+
+    socket.on('disconnect', () => {
+        console.log('User disconnected:', socket.id);
+    });
+});
+
+io.listen(8000);
+
+
+
+// Socket.io Implementation
+io.on('connection', (socket) => {
+    console.log('New user connected:', socket.id);
+
+    // Event: 'joinRoom' - When a user wants to join a chat room
+    socket.on('joinRoom', (roomId) => {
+        // Join the specified room
+        socket.join(roomId);
+        console.log(`User ${socket.id} joined room ${roomId}`);
+    });
+
+    // Event: 'chatMessage' - When a user sends a message
+    socket.on('chatMessage', (data) => {
+        const { senderId, recipientId, message } = data;
+
+        // Save the message to the database (if required)
+        // For simplicity, we won't save messages in this example.
+
+        // Send the message to the sender
+        socket.emit('message', { senderId, recipientId, message });
+
+        // Send the message to the recipient (if online)
+        const recipientSocket = findSocketByUserId(recipientId);
+        if (recipientSocket) {
+            recipientSocket.emit('message', { senderId, recipientId, message });
+        }
+    });
+
+    // Handle disconnections
+    socket.on('disconnect', () => {
+        console.log('User disconnected:', socket.id);
+    });
+});
+
+// Helper function to find a socket by user ID
+function findSocketByUserId(userId) {
+    const sockets = io.sockets.sockets;
+    for (const socketId in sockets) {
+        if (sockets[socketId].userId === userId) {
+            return sockets[socketId];
+        }
+    }
+    return null;
+}
+
+http.listen(port, () => {
+    console.log(`server running on Port ${port}`);
+});
+
+
+
