@@ -10,7 +10,7 @@ const { off } = require("process");
 const { resolve } = require("path");
 const { log } = require("console");
 const port = 2000;
-
+s
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'uploads/');
