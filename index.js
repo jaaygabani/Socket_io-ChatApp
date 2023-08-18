@@ -57,20 +57,6 @@ var participantTable = `create table if not exists participant(
     conversation_id int(5)not null,
     participant_id int(5)not null
 )`;
-var ConversationsTable = `create table if not exists conversations(
-    conversation_id int(10)auto_increment primary key,
-    sender_id int(10)not null,
-    receiver_id int(10)not null
-)`;
-var MessagesTable = `create table if not exists messages(
-    id int(10)auto_increment primary key,
-    conversation_id int(10) not null,
-    sender_id int(10) not null,
-    receiver_id int(10) not null,
-    message text not null,
-    message_seen tinyint(1) default 0,
-    timestamp timestamp default current_timestamp
-)`;
 var MessageTable = `create table if not exists message(
     id int(10)auto_increment primary key,
     conversation_id int(10) not null,
@@ -79,26 +65,26 @@ var MessageTable = `create table if not exists message(
     message_seen tinyint(1) default 0,
     timestamp timestamp default current_timestamp
 )`;
+// var ConversationsTable = `create table if not exists conversations(
+//     conversation_id int(10)auto_increment primary key,
+//     sender_id int(10)not null,
+//     receiver_id int(10)not null
+// )`;
+// var MessagesTable = `create table if not exists messages(
+//     id int(10)auto_increment primary key,
+//     conversation_id int(10) not null,
+//     sender_id int(10) not null,
+//     receiver_id int(10) not null,
+//     message text not null,
+//     message_seen tinyint(1) default 0,
+//     timestamp timestamp default current_timestamp
+// )`;
 
 conn.query(Users, (err, results) => {
     if (err) {
         console.log("error in table creating", err);
     } else {
         console.log("Users Table created successfully");
-    }
-});
-conn.query(ConversationsTable, (err, results) => {
-    if (err) {
-        console.log("Error in conversations table creation:", err);
-    } else {
-        console.log("Conversations table created successfully");
-    }
-});
-conn.query(MessagesTable, (err, results) => {
-    if (err) {
-        console.log("Error in messages table creation:", err);
-    } else {
-        console.log("Messages table created successfully");
     }
 });
 conn.query(MessageTable, (err, results) => {
@@ -122,7 +108,20 @@ conn.query(participantTable, (err, results) => {
         console.log("participant table created successfully");
     }
 });
-
+// conn.query(ConversationsTable, (err, results) => {
+//     if (err) {
+//         console.log("Error in conversations table creation:", err);
+//     } else {
+//         console.log("Conversations table created successfully");
+//     }
+// });
+// conn.query(MessagesTable, (err, results) => {
+//     if (err) {
+//         console.log("Error in messages table creation:", err);
+//     } else {
+//         console.log("Messages table created successfully");
+//     }
+// });
 app.use('/', express.static('uploads'));
 
 app.use(bodyParser.json());
@@ -2125,7 +2124,7 @@ io.on("connection", (socket) => {
         });
     });
 
-    /*=====================================================================================================================================*/
+/*=====================================================================================================================================*/
 
     // socket.on("createGroups", async (data) => {
     //     const { group_name, participants } = data;
