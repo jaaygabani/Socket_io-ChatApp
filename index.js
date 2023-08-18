@@ -1238,6 +1238,7 @@ io.on("connection", (socket) => {
     socket.on("join-dailog", (data) => {
         const { participant_id } = data;
         socket.join(participant_id);
+        console.log(data);
     });
 
     socket.on("createConversation", async (data) => {
@@ -1353,9 +1354,9 @@ io.on("connection", (socket) => {
         }
     });
     socket.on("createConversations", async (data) => {
-        const { sender_id, receiver_id, conversation_type } = data;
+        const { sender_id, receiver_id } = data;
 
-        if (!sender_id || !receiver_id || !conversation_type) {
+        if (!sender_id || !receiver_id ) {
             socket.emit("createConversations", { error: "Missing required data" });
             return;
         }
@@ -1391,7 +1392,7 @@ io.on("connection", (socket) => {
                 WHERE c.conversation_type = ?
             `;
             const existingConversationResults = await new Promise((resolve, reject) => {
-                conn.query(existingConversationQuery, [sender_id, receiver_id, conversation_type], (err, existingResults) => {
+                conn.query(existingConversationQuery, [sender_id, receiver_id, 1], (err, existingResults) => {
                     if (err) {
                         console.error('Error executing query:', err);
                         reject(err);
@@ -1423,7 +1424,7 @@ io.on("connection", (socket) => {
             // Insert new conversation
             const insertConversationQuery = "insert into conversation (conversation_type) values (?)";
             const insertConversationResults = await new Promise((resolve, reject) => {
-                conn.query(insertConversationQuery, [conversation_type], (err, iResults) => {
+                conn.query(insertConversationQuery, [1], (err, iResults) => {
                     if (err) {
                         console.error('Error executing query:', err);
                         reject(err);
@@ -2058,7 +2059,11 @@ io.on("connection", (socket) => {
     socket.on("delete-messagess", (data) => {
         const { message_id, conversation_id, } = data;
         if (!Array.isArray(message_id)) {
-            console.log("Invalid message_id data received.");
+            socket.emit("delete-messagess",{error:"Invalid message_id data received."});
+            return;
+        }
+        if(!conversation_id){
+            socket.emit("delete-messagess",{error : "Please enter conversation_id"});
             return;
         }
 
@@ -2227,8 +2232,20 @@ io.on("connection", (socket) => {
     socket.on("createGroup", async (data) => {
         const { creater_id, group_name, participants } = data;
 
-        if (!creater_id || !group_name || !participants || participants.length < 2) {
-            socket.emit("createGroup", { error: "Invalid group data" });
+        if(!creater_id){
+            socket.emit("delete-messagess",{error : "Please enter creater_id"});
+            return;
+        }
+        if(!group_name){
+            socket.emit("delete-messagess",{error : "Please enter group_name"});
+            return;
+        }
+        if(!participants){
+            socket.emit("delete-messagess",{error : "Please enter participants"});
+            return;
+        }
+        if( participants.length < 2){
+            socket.emit("delete-messagess",{error : "Invalid group data"});
             return;
         }
 
@@ -2434,8 +2451,16 @@ io.on("connection", (socket) => {
     socket.on("addParticipantsToGroup", async (data) => {
         const { conversation_id, participants } = data;
 
-        if (!conversation_id || !participants || participants.length < 1) {
-            socket.emit("addParticipantsToGroup", { error: "Invalid data" });
+        if(!conversation_id){
+            socket.emit("delete-messagess",{error : "Please enter conversation_id"});
+            return;
+        }
+        if(!participants){
+            socket.emit("delete-messagess",{error : "Please enter participants"});
+            return;
+        }
+        if(participants.length < 1){
+            socket.emit("delete-messagess",{error : "Invalid data"});
             return;
         }
 
@@ -2546,8 +2571,16 @@ io.on("connection", (socket) => {
     socket.on("removeParticipantsFromGroup", async (data) => {
         const { conversation_id, participants } = data;
 
-        if (!conversation_id || !participants || participants.length < 1) {
-            socket.emit("removeParticipantsFromGroup", { error: "Invalid data" });
+        if(!conversation_id){
+            socket.emit("delete-messagess",{error : "Please enter conversation_id"});
+            return;
+        }
+        if(!participants){
+            socket.emit("delete-messagess",{error : "Please enter participants"});
+            return;
+        }
+        if (participants.length < 1){
+            socket.emit("delete-messagess",{error : "Invalid data"});
             return;
         }
 
@@ -2639,8 +2672,16 @@ io.on("connection", (socket) => {
     socket.on("sendMessage", async (data) => {
         const { conversation_id, sender_id, message } = data;
 
-        if (!conversation_id || !sender_id || !message) {
-            socket.emit("sendMessage", { error: "Invalid message data" });
+        if(!conversation_id){
+            socket.emit("delete-messagess",{error : "Please enter conversation_id"});
+            return;
+        }
+        if(!sender_id){
+            socket.emit("delete-messagess",{error : "Please enter sender_id"});
+            return;
+        }
+        if(!message){
+            socket.emit("delete-messagess",{error : "Please enter message"});
             return;
         }
 
@@ -2690,8 +2731,12 @@ io.on("connection", (socket) => {
     socket.on("deleteMessage", async (data) => {
         const { conversation_id, message_id } = data;
 
-        if (!conversation_id || !message_id) {
-            socket.emit("deleteMessage", { error: "Invalid data" });
+        if(!conversation_id){
+            socket.emit("delete-messagess",{error : "Please enter conversation_id"});
+            return;
+        }
+        if(!message_id){
+            socket.emit("delete-messagess",{error : "Please enter message_id"});
             return;
         }
 
